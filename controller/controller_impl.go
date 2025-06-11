@@ -29,13 +29,28 @@ func (ctrl *ControllerImpl) Register(c *fiber.Ctx) error {
 
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh",
+		Value:    token,
 		Expires:  time.Now().Add(7 * time.Hour),
 		HTTPOnly: true,
-		Secure:   true,
+		Secure:   false,
 		SameSite: "Lax",
 		Path:     "/",
 	})
 
 	c.JSON(web.Response{AccessToken: token})
 	return nil
+}
+
+func (ctrl *ControllerImpl) Refresh(c *fiber.Ctx) error {
+	refreshToken := c.Cookies("refresh")
+	if refreshToken == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"Error": "No refresh token"})
+	}
+
+	newAccessToken, err := ctrl.svc.Refresh(c.Context(), refreshToken)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"Error": "No refresh token"})
+	}
+
+	return c.JSON(&web.Response{AccessToken: newAccessToken})
 }
