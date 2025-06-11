@@ -10,7 +10,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type ServiceImpl struct{}
+type ServiceImpl struct {
+}
 
 func NewServiceImpl() Service {
 	return &ServiceImpl{}
@@ -25,7 +26,7 @@ func (svc *ServiceImpl) Register(ctx context.Context, entity *domain.Domain) (st
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":       entity.Id,
 		"username": entity.Username,
-		"exp":      time.Now(),
+		"exp":      time.Now().Add(1 * time.Minute).Unix(),
 	})
 
 	tokenT := os.Getenv("JWT_SECRET")
