@@ -33,7 +33,7 @@ func (ctrl *ControllerImpl) Register(c *fiber.Ctx) error {
 		Expires:  time.Now().Add(7 * time.Hour),
 		HTTPOnly: true,
 		Secure:   false,
-		SameSite: "Lax",
+		SameSite: "None",
 		Path:     "/",
 	})
 

@@ -27,7 +27,7 @@ func (svc *ServiceImpl) Register(ctx context.Context, entity *domain.Domain) (st
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":       entity.Id,
 		"username": entity.Username,
-		"exp":      time.Now().Add(1 * time.Minute).Unix(),
+		"exp":      time.Now().Add(1 * time.Hour).Unix(),
 	})
 
 	tokenT := os.Getenv("JWT_SECRET")
