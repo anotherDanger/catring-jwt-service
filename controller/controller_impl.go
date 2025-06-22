@@ -21,7 +21,10 @@ func NewControllerImpl(svc service.Service) Controller {
 
 func (ctrl *ControllerImpl) Register(c *fiber.Ctx) error {
 	var reqBody domain.Domain
-	c.BodyParser(&reqBody)
+	if err := c.BodyParser(&reqBody); err != nil {
+		return err
+	}
+
 	token, err := ctrl.svc.Register(c.Context(), &reqBody)
 	if err != nil {
 		return err
@@ -30,15 +33,14 @@ func (ctrl *ControllerImpl) Register(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh",
 		Value:    token,
-		Expires:  time.Now().Add(7 * time.Hour),
+		Expires:  time.Now().Add(7 * 24 * time.Hour),
 		HTTPOnly: true,
 		Secure:   false,
 		SameSite: "None",
 		Path:     "/",
 	})
 
-	c.JSON(web.Response{AccessToken: token})
-	return nil
+	return c.JSON(web.Response{AccessToken: token})
 }
 
 func (ctrl *ControllerImpl) Refresh(c *fiber.Ctx) error {
@@ -53,4 +55,21 @@ func (ctrl *ControllerImpl) Refresh(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(&web.Response{AccessToken: newAccessToken})
+}
+
+func (ctrl *ControllerImpl) LogoutHandler(c *fiber.Ctx) error {
+
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Now().Add(-1 * time.Hour),
+		HTTPOnly: true,
+		Secure:   false,
+		SameSite: "None",
+	})
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Logout berhasil",
+	})
 }

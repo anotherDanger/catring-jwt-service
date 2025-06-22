@@ -3,12 +3,12 @@ package service
 import (
 	"catering-jwt-service/domain"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
 )
 
 type ServiceImpl struct {
@@ -19,15 +19,15 @@ func NewServiceImpl() Service {
 }
 
 func (svc *ServiceImpl) Register(ctx context.Context, entity *domain.Domain) (string, error) {
-	err := godotenv.Load()
-	if err != nil {
-		panic(err)
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":       entity.Id,
 		"username": entity.Username,
-		"exp":      time.Now().Add(1 * time.Hour).Unix(),
+		"exp":      time.Now().Add(1 * time.Minute).Unix(),
 	})
 
 	tokenT := os.Getenv("JWT_SECRET")
@@ -42,18 +42,17 @@ func (svc *ServiceImpl) Register(ctx context.Context, entity *domain.Domain) (st
 }
 
 func (svc *ServiceImpl) Refresh(ctx context.Context, tokenStr string) (string, error) {
-	err := godotenv.Load()
-	if err != nil {
-		panic(err)
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	secret := []byte(os.Getenv("JWT_SECRET"))
 
 	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
 		_, ok := t.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
-			return err.Error(), err
-			return nil, err
+			return nil, errors.New("invalid token")
 		}
 
 		return secret, nil
