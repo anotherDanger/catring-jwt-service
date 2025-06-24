@@ -23,6 +23,7 @@ func GetFiberApp() *fiber.App {
 			ReadTimeout:  5 * time.Second,
 			WriteTimeout: 5 * time.Second,
 			IdleTimeout:  10 * time.Second,
+			ProxyHeader:  "X-Forwarded-Proto",
 		})
 		fmt.Println("Fiber new App")
 	})
@@ -35,13 +36,17 @@ func main() {
 
 	app := GetFiberApp()
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:3000",
+		AllowOrigins:     "https://khatering.shop, http://localhost:3000",
 		AllowCredentials: true,
 		AllowHeaders:     "Origin, Content-type, Accept, Authorization",
 		AllowMethods:     "POST",
 	}))
+	app.Options("/*", func(c *fiber.Ctx) error {
+		return c.SendStatus(fiber.StatusOK)
+	})
+
 	app.Post("/v1/auth", ctrl.Register)
 	app.Post("/v1/refresh", ctrl.Refresh)
-	app.Post("/v1/Logout", ctrl.LogoutHandler)
+	app.Post("/v1/logout", ctrl.LogoutHandler)
 	app.Listen(":8081")
 }
