@@ -4,7 +4,6 @@ import (
 	"catering-jwt-service/domain"
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"time"
 
@@ -41,43 +40,38 @@ func (svc *ServiceImpl) Register(ctx context.Context, entity *domain.Domain) (st
 	return token, nil
 }
 
-func (svc *ServiceImpl) Refresh(ctx context.Context, tokenStr string) (string, error) {
-	// err := godotenv.Load()
-	// if err != nil {
-	// 	panic(err)
-	// }
-
+func (svc *ServiceImpl) Refresh(ctx context.Context, tokenStr string) (token string, username string, err error) {
 	secret := []byte(os.Getenv("JWT_SECRET"))
 
-	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
-		_, ok := t.Method.(*jwt.SigningMethodHMAC)
-		if !ok {
+	parsedToken, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid token")
 		}
-
 		return secret, nil
 	})
 
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		fmt.Println("error parsing claims")
-		return err.Error(), err
+	if err != nil {
+		return "", "", err
+	}
+
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	if !ok || !parsedToken.Valid {
+		return "", "", errors.New("invalid token claims")
 	}
 
 	id, _ := claims["id"].(string)
-	username, _ := claims["username"].(string)
+	username, _ = claims["username"].(string)
 
-	NewClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	newClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":       id,
 		"username": username,
 		"exp":      time.Now().Add(1 * time.Minute).Unix(),
 	})
 
-	newToken, err := NewClaims.SignedString(secret)
+	newToken, err := newClaims.SignedString(secret)
 	if err != nil {
-		return err.Error(), err
-		panic(err)
+		return "", "", err
 	}
 
-	return newToken, nil
+	return newToken, username, nil
 }
