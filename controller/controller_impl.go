@@ -40,7 +40,7 @@ func (ctrl *ControllerImpl) Register(c *fiber.Ctx) error {
 		Path:     "/",
 	})
 
-	return c.JSON(web.Response{AccessToken: token})
+	return c.JSON(web.Response{AccessToken: token, Username: reqBody.Username})
 }
 
 func (ctrl *ControllerImpl) Refresh(c *fiber.Ctx) error {
@@ -49,12 +49,12 @@ func (ctrl *ControllerImpl) Refresh(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"Error": "No refresh token"})
 	}
 
-	newAccessToken, err := ctrl.svc.Refresh(c.Context(), refreshToken)
+	newAccessToken, username, err := ctrl.svc.Refresh(c.Context(), refreshToken)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"Error": "No refresh token"})
 	}
 
-	return c.JSON(&web.Response{AccessToken: newAccessToken})
+	return c.JSON(&web.Response{AccessToken: newAccessToken, Username: username})
 }
 
 func (ctrl *ControllerImpl) LogoutHandler(c *fiber.Ctx) error {
