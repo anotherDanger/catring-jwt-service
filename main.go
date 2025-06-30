@@ -36,10 +36,10 @@ func main() {
 
 	app := GetFiberApp()
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "https://khatering.shop, http://localhost:3000",
+		AllowOrigins:     "https://khatering.shop,http://localhost:3000,https://catering-admin.netlify.app,https://khatering.netlify.app",
 		AllowCredentials: true,
 		AllowHeaders:     "Origin, Content-type, Accept, Authorization",
-		AllowMethods:     "POST",
+		AllowMethods:     "POST, OPTIONS",
 	}))
 	app.Options("/*", func(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusOK)
