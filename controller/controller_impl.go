@@ -30,12 +30,17 @@ func (ctrl *ControllerImpl) Register(c *fiber.Ctx) error {
 		return err
 	}
 
+	rToken, err := ctrl.svc.RefreshToken(c.Context(), &reqBody)
+	if err != nil {
+		return err
+	}
+
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh",
-		Value:    token,
+		Value:    rToken,
 		Expires:  time.Now().Add(7 * 24 * time.Hour),
 		HTTPOnly: true,
-		Secure:   false,
+		Secure:   true,
 		SameSite: "None",
 		Path:     "/",
 	})
@@ -44,14 +49,15 @@ func (ctrl *ControllerImpl) Register(c *fiber.Ctx) error {
 }
 
 func (ctrl *ControllerImpl) Refresh(c *fiber.Ctx) error {
+
 	refreshToken := c.Cookies("refresh")
 	if refreshToken == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"Error": "No refresh token"})
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"Error": "No refresh token 1"})
 	}
 
 	newAccessToken, username, err := ctrl.svc.Refresh(c.Context(), refreshToken)
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"Error": "No refresh token"})
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"Error": "No refresh token 2"})
 	}
 
 	return c.JSON(&web.Response{AccessToken: newAccessToken, Username: username})
@@ -65,7 +71,7 @@ func (ctrl *ControllerImpl) LogoutHandler(c *fiber.Ctx) error {
 		Path:     "/",
 		Expires:  time.Now().Add(-1 * time.Hour),
 		HTTPOnly: true,
-		Secure:   false,
+		Secure:   true,
 		SameSite: "None",
 	})
 
