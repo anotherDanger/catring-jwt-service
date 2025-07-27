@@ -36,7 +36,7 @@ func main() {
 
 	app := GetFiberApp()
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "https://khatering.shop,https://catering-admin.netlify.app,https://khatering.netlify.app",
+		AllowOrigins:     "https://khatering.shop,https://catering-admin.netlify.app,https://khatering.netlify.app,https://khatering.store",
 		AllowCredentials: true,
 		AllowHeaders:     "Origin, Content-type, Accept, Authorization",
 		AllowMethods:     "POST, OPTIONS, GET",
